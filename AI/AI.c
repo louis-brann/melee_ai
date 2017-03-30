@@ -51,6 +51,46 @@ Logic waveDashLogic =
     {&waveDash, .arg1.p = &cpuPlayer}
 };
 
+// -------------------------------------------
+
+// Note: currently only for action state waiting
+bool onPlatform(FunctionArg port)
+{
+    // Platform side = _gameState.stage.side;
+    // Platform top = _gameState.stage.top;
+
+    // float x = _gameState.playerData[port.u]->coordinates.x;
+    float y = _gameState.playerData[port.u]->coordinates.y;
+    // float abs_x = fabs(x);
+
+    // bool onSide = y == side.height && \
+    //               abs_x >= side.left && \
+    //               abs_x <= side.right;  
+    // bool onTop = y == top.height && \
+    //              abs_x >= top.left && \
+    //              abs_x <= top.right;
+    return actionStateEq(port, _AS_Wait) && y > 0.f;
+}
+
+// Shai drops work by buffering down to disable rolling and
+// shielding prior to actually shielding 
+// https://smashboards.com/threads/shai-drop-update-detailed-guide-frame-data.322062/
+// 
+RawInput _raw_shaiDrop[3] = 
+{
+    {FULL_STICK | STICK_ANGLE(270.f), 0, NO_FLAGS},
+    {L_BUTTON, 4, NO_FLAGS},
+    {RELEASE, 2, NO_FLAGS}
+};
+Move _mv_shaiDrop = {.inputs = _raw_shaiDrop, .size=3};
+Logic shaiDropLogic =
+{
+    {&onPlatform, .arg1.u = AI_PORT},
+    {&addMove, .arg1.p = &cpuPlayer, .arg2.p = &_mv_shaiDrop}
+};
+
+// -------------------------------------------
+
 static void init()
 {
     initHeap(heap, heap + sizeof(heap));
@@ -60,7 +100,7 @@ static void init()
 // TODO: Which logic would take priority if both conditions are met?
 static void loadDefaultLogic()
 {
-    addLogic(&cpuPlayer, &waveDashLogic);
+    addLogic(&cpuPlayer, &shaiDropLogic);
 }
 
 void _main()
