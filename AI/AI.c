@@ -18,6 +18,8 @@ static bool init_run = false;
 #define AI_PORT 2
 static AI cpuPlayer = INIT_AI(AI_PORT, FALCO | FOX | MARTH | FALCON);
 
+// ----------------- WAVE DASH --------------------------
+
 // Note: Flags can't be user-defined without rebuilding library from scratch every time.
 //          https://stackoverflow.com/questions/14919366/how-to-compile-library-on-c-using-gcc
 // Question: What is best practice regarding ^ that?
@@ -51,7 +53,7 @@ Logic waveDashLogic =
     {&waveDash, .arg1.p = &cpuPlayer}
 };
 
-// -------------------------------------------
+// ------------------- SHIELD DROP ------------------------
 
 // Note: currently only for action state waiting
 bool onPlatform(FunctionArg port)
@@ -89,7 +91,75 @@ Logic shaiDropLogic =
     {&addMove, .arg1.p = &cpuPlayer, .arg2.p = &_mv_shaiDrop}
 };
 
-// -------------------------------------------
+// ------------------ LANDING -------------------------
+
+#define X_COORD(p)          (_gameState.playerData[p]->coordinates.x)
+#define Y_COORD(p)          (_gameState.playerData[p]->coordinates.y)
+#define STAGE               _gameState.stage
+
+// to mess around with how near to the surface we need for wave landing
+#define WAVELAND_HEIGHT 0.5f
+bool nearerSurface(FunctionArg port)
+{
+    float x = fabs(X_COORD(port.u));
+    float y = Y_COORD(port.u);
+
+    bool xSidePlat = x > STAGE.side.left && x < STAGE.side.right;
+
+    bool ySidePlat = y > STAGE.side.height
+        && y < STAGE.side.height + WAVELAND_HEIGHT;
+
+    bool topPlat = x < STAGE.top.right
+        && y > STAGE.top.height && y < STAGE.top.height + WAVELAND_HEIGHT;
+
+    if (STAGE.side.height < 1.f) {xSidePlat = false;}
+    if (STAGE.top.height  < 1.f) {topPlat = false;}
+
+    bool stage = !offstage(port) && y < WAVELAND_HEIGHT;
+
+    return (xSidePlat && ySidePlat) || topPlat || stage;
+}
+
+RawInput _raw_airDodge[2] = 
+{
+    {L_BUTTON, 0, NO_FLAGS},
+    {RELEASE, 0, NO_FLAGS}
+};
+Move _mv_airDodge = {.inputs = _raw_airDodge, .size = 2};
+#define SET_AIRDODGE_ANGLE(x) _raw_airDodge[0].controller = \
+    L_BUTTON | FULL_STICK | STICK_ANGLE(x)
+void waveLand(AI* ai)
+{
+    setGlobalVariables(ai);
+    float ang = rInfo.stageDir > 90.f ? 200.f : 340.f;
+    SET_AIRDODGE_ANGLE(ang);
+    addMove(ai, &_mv_airDodge);
+}
+bool wavelandSituation(FunctionArg port)
+{
+    // debug
+    char info[20];
+    sprintf(info, "v: %f, x: %f", \
+            _gameState.playerData[AI_PORT]->deltaCoordinates.y, \
+            _gameState.playerData[AI_PORT]->coordinates.y);
+    print(info);
+
+    return nearerSurface(port) && \
+           inAir(port) && \
+           _gameState.playerData[port.u]->deltaCoordinates.y < 0.f;
+}
+Logic waveLandLogic =
+{
+    {&wavelandSituation, AI_PORT},
+    {&waveLand, .arg1.p = &cpuPlayer}
+};
+Logic jumpLogic =
+{
+    {&actionStateEq, .arg1.u = AI_PORT, .arg2.u = _AS_Wait},
+    {&addMove, .arg1.p = &cpuPlayer, .arg2.p = &_mv_shortHop}
+};
+
+// ----------------------------------------------------
 
 static void init()
 {
@@ -100,7 +170,8 @@ static void init()
 // TODO: Which logic would take priority if both conditions are met?
 static void loadDefaultLogic()
 {
-    addLogic(&cpuPlayer, &shaiDropLogic);
+    addLogic(&cpuPlayer, &jumpLogic);
+    addLogic(&cpuPlayer, &waveLandLogic);
 }
 
 void _main()
