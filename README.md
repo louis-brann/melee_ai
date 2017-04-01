@@ -11,7 +11,7 @@ I should probably be using Github issues for these, but I'm kinda lazy atm
 ###### Core
 - [x] Wave Dash
 - [x] Wave Land (-ish)
-- [ ] L Cancel
+- [x] L Cancel
 - [ ] Dash Dance
 - [ ] Wave Shine
 
