@@ -1,6 +1,6 @@
 # melee_ai
 
-Making a melee AI using sherman5's [MeleeAI](https://github.com/sherman5/MeleeModdingLibrary)
+Making a melee AI my fork of sherman5's [MeleeModdingLibrary](https://github.com/louis-brann/MeleeModdingLibrary)
 
 ## TODO
 
