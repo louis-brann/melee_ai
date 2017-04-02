@@ -1,0 +1,3 @@
+[submodule "MeleeModdingLibrary"]
+	path = MeleeModdingLibrary
+	url = git@github.com:louis-brann/MeleeModdingLibrary.git
