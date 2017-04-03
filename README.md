@@ -21,7 +21,7 @@ I should probably be using Github issues for these, but I'm kinda lazy atm
 
 #### Code Fixes
 
-- [ ] Recompile library every build (--> better code organization, can add flags, etc.)
+- [x] Recompile library every build (--> better code organization, can add flags, etc.)
 - [ ] Cleanup air dodge code
 
 #### Bots

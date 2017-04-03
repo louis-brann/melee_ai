@@ -1,3 +1,10 @@
+# Project specific
+*.iso
+*.data
+libs/*
+
+### Default C .gitignore
+
 # Object files
 *.o
 *.ko
