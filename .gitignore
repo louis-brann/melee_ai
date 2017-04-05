@@ -2,6 +2,7 @@
 *.iso
 *.data
 libs/*
+include/*
 
 ### Default C .gitignore
 

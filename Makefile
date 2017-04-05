@@ -1,10 +1,15 @@
 all: AI
 
 .PHONY : AI
-AI: libs
+AI: libs includes
 	cd AI && \
 	wiimake ../melee.iso AI.ini && \
 	cd ..
+
+.PHONY : includes
+includes: 
+	mkdir -p include/mml && \
+	cp MeleeModdingLibrary/src/*.h include/mml 
 
 .PHONY : libs
 libs:
